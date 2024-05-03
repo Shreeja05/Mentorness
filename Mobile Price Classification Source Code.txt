@@ -1,0 +1,64 @@
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import make_pipeline
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
+
+
+data = pd.read_csv("test.csv")
+data = pd.read_csv("train.csv")
+
+
+print(data.head())
+print(data.info())
+print(data.describe())
+
+
+print(data.isnull().sum())
+sns.countplot(data['price_range'])
+plt.show()
+
+
+corr_matrix = data.corr()
+plt.figure(figsize=(16, 12))
+sns.heatmap(corr_matrix, annot=True, cmap='coolwarm')
+plt.show()
+
+
+X = data.drop('price_range', axis=1)
+y = data['price_range']
+
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+
+model = make_pipeline(StandardScaler(), RandomForestClassifier(n_estimators=100, random_state=42))
+
+
+model.fit(X_train, y_train)
+
+
+y_pred = model.predict(X_test)
+print("Classification Report:")
+print(classification_report(y_test, y_pred))
+print("Confusion Matrix:")
+print(confusion_matrix(y_test, y_pred))
+print("Accuracy:", accuracy_score(y_test, y_pred))
+
+
+cv_score = cross_val_score(model, X, y, cv=5)
+print("Cross-validation scores:", cv_score)
+print("Mean CV score:", np.mean(cv_score))
+
+
+
+
+import joblib
+joblib.dump(model, 'mobile_price_classifier.pkl')
+
+
